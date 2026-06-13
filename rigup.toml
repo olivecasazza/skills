@@ -3,7 +3,7 @@
 
 [rigs.default.riglets]
 # Skills defined in this repository (riglets/*.nix)
-self = ["nixlab-health"]
+self = ["nixlab-health", "comfyui-imagegen"]
 # Base riglets pulled from the rigup flake itself
 rigup = ["agent-rig-system"]
 
