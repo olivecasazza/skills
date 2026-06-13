@@ -1,0 +1,25 @@
+{
+  "session_id": "f2c0a000-0000-0000-0000-00000000ca20:eval",
+  "outputs": [
+    {
+      "inputs": { "input_value": "what is in the vault about k3s?" },
+      "outputs": [
+        {
+          "results": {
+            "message": {
+              "text": "Your notes describe a 3-member etcd HA control plane across contra, seir, and hetzner-cp.",
+              "sender": "Machine",
+              "sender_name": "AI"
+            }
+          },
+          "messages": [
+            {
+              "message": "Your notes describe a 3-member etcd HA control plane across contra, seir, and hetzner-cp.",
+              "sender": "Machine"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
