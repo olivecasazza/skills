@@ -1,0 +1,12 @@
+# Nix build outputs
+result
+result-*
+
+# Nix develop/direnv outputs
+.direnv/
+
+# Rigup build outputs
+.rigup
+
+# Rigup local config
+rigup.local.toml

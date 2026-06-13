@@ -1,0 +1,11 @@
+# rigup configuration — nixlab declarative skills
+# Defines which rigs are available and which riglets they bundle.
+
+[rigs.default.riglets]
+# Skills defined in this repository (riglets/*.nix)
+self = ["nixlab-health"]
+# Base riglets pulled from the rigup flake itself
+rigup = ["agent-rig-system"]
+
+# Local (non-committed) overrides:
+# Create `rigup.local.toml` (gitignored) to extend rigs without editing this file.
