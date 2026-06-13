@@ -116,6 +116,7 @@ def build_payload(deal, model):
         "model": model,
         "messages": [{"role": "user", "content": build_prompt(deal)}],
         "response_format": {"type": "json_object"},
+        "temperature": 0,
         "max_tokens": 3500,
     }
 

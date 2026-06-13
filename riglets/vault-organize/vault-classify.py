@@ -78,6 +78,7 @@ def build_payload(content, model):
     return {
         "model": model,
         "temperature": 0,
+        "response_format": {"type": "json_object"},
         "messages": [
             {"role": "user", "content": CLASSIFY_PROMPT.format(content=body[:8000])},
         ],

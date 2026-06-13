@@ -41,6 +41,9 @@ def main():
     }
     payload = tool.build_payload(deal, "claude-sonnet-4-6")
     assert payload["model"] == "claude-sonnet-4-6", "model not set on payload"
+    # Determinism invariant: temperature 0 + structured output.
+    assert payload["temperature"] == 0, "temperature must be 0 for deterministic verdicts"
+    assert payload["response_format"] == {"type": "json_object"}, "must request structured JSON output"
     assert payload["messages"][0]["role"] == "user", "message role wrong"
     assert "OVHAF" in payload["messages"][0]["content"], "OVHAF framework missing from prompt"
     assert "5995WX" in payload["messages"][0]["content"], "listing title not embedded in prompt"

@@ -46,6 +46,8 @@ def main():
     snippets = ["### A\n\nalpha body", "### B\n\nbeta body"]
     payload = tool.build_payload(snippets, model="claude-sonnet-4-6")
     assert payload["model"] == "claude-sonnet-4-6", "model not threaded into payload"
+    # Determinism invariant: temperature 0 (reproducible synthesis).
+    assert payload["temperature"] == 0, "temperature must be 0 for deterministic synthesis"
     roles = [m["role"] for m in payload["messages"]]
     assert roles == ["system", "user"], f"unexpected message roles: {roles}"
     assert "\n\n---\n\n" in payload["messages"][1]["content"], "snippets not joined with divider"

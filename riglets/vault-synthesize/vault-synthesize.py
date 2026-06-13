@@ -65,6 +65,7 @@ def build_payload(snippets, model=DEFAULT_MODEL):
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_msg},
         ],
+        "temperature": 0,
         "max_tokens": 400,
     }
 
