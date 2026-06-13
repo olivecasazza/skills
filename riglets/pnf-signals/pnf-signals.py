@@ -61,6 +61,7 @@ def main():
     p_list.add_argument("--limit", type=int, default=100)
 
     sub.add_parser("scan", help="Trigger a fresh sector scan")
+    sub.add_parser("dispatch", help="Sweep approved signals (execute the dispatch pipeline)")
 
     for action in ("approve", "reject"):
         p = sub.add_parser(action, help=f"{action.capitalize()} a signal")
@@ -74,6 +75,8 @@ def main():
         print(json.dumps(_req(list_url(args.url, args.status, args.limit)), indent=2))
     elif args.cmd == "scan":
         print(json.dumps(_req(f"{args.url.rstrip('/')}/run/scan", method="POST", body={})))
+    elif args.cmd == "dispatch":
+        print(json.dumps(_req(f"{args.url.rstrip('/')}/run/dispatch", method="POST", body={})))
     elif args.cmd in ("approve", "reject"):
         print(json.dumps(_req(
             gate_url(args.url, args.id, args.cmd),

@@ -15,7 +15,11 @@ pnf-signals list [--status waiting_approval] [--limit 50]   # read the signal bo
 pnf-signals scan                                            # trigger a fresh sector scan
 pnf-signals approve <id> [--note "..."] [--actor cio]
 pnf-signals reject  <id> [--note "..."] [--actor risk-manager]
+pnf-signals dispatch                                        # sweep approved signals (trader)
 ```
+
+The cron CronJobs are retired — scans and dispatch now run only when the desk
+triggers them (via the routines → these commands). Nothing scans on its own.
 
 Base URL: `$PNF_OPS_URL` or `http://pnf-ops-metrics.apps.svc.cluster.local:8080`.
 
