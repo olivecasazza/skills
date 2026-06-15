@@ -35,4 +35,3 @@ Use SocratiCode when:
 - Mapping dependencies between modules.
 
 Prefer `codebase_search` over recursive grep for high-level conceptual lookups.
-
