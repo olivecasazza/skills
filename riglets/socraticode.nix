@@ -2,7 +2,7 @@ _: { pkgs, riglib, ... }: {
   config.riglets.socraticode = {
     meta = {
       description = "SocratiCode — codebase intelligence, semantic search, and impact analysis";
-      intent = "investigator";
+      intent = "toolbox";
       whenToUse = [
         "When navigating unfamiliar codebases"
         "To find entry points for features conceptually"

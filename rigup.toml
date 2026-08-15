@@ -5,6 +5,7 @@
 # Skills defined in this repository (riglets/*.nix)
 self = [
   "nixlab-health",
+  "gpu-scheduling",
   "comfyui-imagegen",
   "dealbot-ovhaf",
   "langflow-flows",
