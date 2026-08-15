@@ -17,7 +17,7 @@ Usage:
   vault-classify note.md
   vault-classify note.md --apply --vault /mnt/seaweedfs/obsidian-vault
   cat note.md | vault-classify -            # read from stdin, classify only
-  vault-classify note.md --model gpt-5.5 --url http://host:8317/v1
+  vault-classify note.md --model auto/reasoning --url http://host:8317/v1
 
 Stdlib only (urllib/json/argparse). Auth: Bearer from --key or $ANTHROPIC_API_KEY.
 """

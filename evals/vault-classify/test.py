@@ -49,8 +49,8 @@ def main():
     assert body.startswith("How we route"), "body not split from frontmatter"
 
     # 2. Payload construction: valid OpenAI chat shape, deterministic, no creativity.
-    payload = tool.build_payload(fm, body, model="claude-sonnet-4-6", destinations=dests)
-    assert payload["model"] == "claude-sonnet-4-6", "model not set"
+    payload = tool.build_payload(fm, body, model="auto/reasoning", destinations=dests)
+    assert payload["model"] == "auto/reasoning", "model not set"
     assert payload["temperature"] == 0, "classifier must be deterministic (temp 0)"
     assert payload["max_tokens"] == 10, "one-word answer => small max_tokens"
     roles = [m["role"] for m in payload["messages"]]

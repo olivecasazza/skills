@@ -26,7 +26,7 @@ steps:
     run: vault-classify -f evals/vault-organize/fixtures/{{case.note}} --model {{case.model}}
     capture: verdict            # stdout JSON
   - id: judge
-    uses: instructor-judge       # Instructor + omniroute (gpt-5.5)
+    uses: instructor-judge       # Instructor + omniroute (auto/reasoning)
     schema: ClassifyVerdict
     inputs:
       verdict: "{{steps.classify.verdict}}"
@@ -67,7 +67,7 @@ rubric = "A personal to-do; expect category=personal, no fabricated entities."
 
 - [x] Deterministic structural eval (`test.py`) — wired as a flake check.
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5).
+- [ ] `instructor-judge` step (Instructor → omniroute auto/reasoning).
 - [ ] `fixtures/` notes + `cases.toml` with expected categories/rubrics.
 
 Until Archon is stood up, behavioral evals are run manually:

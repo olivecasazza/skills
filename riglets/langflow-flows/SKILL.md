@@ -65,16 +65,14 @@ langflow-run -f "$(langflow-run --list | awk '/MUTHA-VA/{print $1}')" \
    older Langflow response shapes). `--json` dumps the raw response if the
    extraction misses.
 
-## Backend caveat — LLM provider repoint
+## Backend note — LLM provider
 
 Flows that call a language model route through Langflow's `OPENAI_API_BASE`
-env. The HelmRelease still points this at the **dead** `litellm.apps:4000`
-gateway. Any flow with an LLM/embedding node will fail at that node until the
-backend env is repointed to the live omniroute gateway
-(`http://omniroute.apps.svc.cluster.local:20128/v1`) for chat and
-`http://tei.apps.svc.cluster.local` for embeddings. That is a backend config
-change in `modules/k8s/apps/langflow/default.nix`, not something this tool
-does — but it is the most likely reason a run returns an error mid-flow.
+env, which the HelmRelease (`modules/k8s/apps/langflow/default.nix`) points at
+the omniroute gateway (`http://omniroute.apps.svc.cluster.local:20128/v1`);
+embeddings go to `http://tei.apps.svc.cluster.local`. If a run errors mid-flow
+at an LLM/embedding node, check that backend env first — it is a backend
+config change, not something this tool does.
 
 ## Out of scope
 

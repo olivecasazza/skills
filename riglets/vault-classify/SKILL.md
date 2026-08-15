@@ -27,8 +27,8 @@ cat NOTE.md | vault-classify -      # classify only, no file moves
   category (safe, read-only against the vault).
 - `--vault`: vault root for `--apply` (default `$VAULT` or
   `/mnt/seaweedfs/obsidian-vault`).
-- `--model`: chat model. Default `claude-sonnet-4-6`. Also valid on the
-  backend: `gpt-5.5`, `gemini-3-flash-preview`.
+- `--model`: chat model. Default `auto/reasoning` (an omniroute routing
+  intent; `GET /v1/models` on the gateway lists the full set).
 - `--url`: chat base URL. Default `$CHAT_URL` or the in-cluster service
   `http://omniroute.apps.svc.cluster.local:20128/v1`. (The old
   `litellm:4000` gateway is dead — do not use it.)

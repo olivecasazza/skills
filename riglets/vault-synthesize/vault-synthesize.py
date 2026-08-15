@@ -10,7 +10,7 @@ deciding which notes belong together. You pass the notes; it writes the concept.
 Usage:
   vault-synthesize --note a.md --note b.md --note c.md --note d.md
   vault-synthesize -n a.md -n b.md -n c.md -n d.md --out _concepts --vault /vault
-  vault-synthesize -n a.md -n b.md ... --model claude-sonnet-4-6 --dry-run
+  vault-synthesize -n a.md -n b.md ... --model auto/reasoning --dry-run
 
 Backend: the in-cluster omniroute gateway (chat/completions), NOT the dead
 litellm:4000. Auth is a Bearer token from $ANTHROPIC_API_KEY.

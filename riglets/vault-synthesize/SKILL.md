@@ -27,7 +27,7 @@ vault-synthesize -n NOTE.md -n NOTE.md [-n NOTE.md ...] \
   (SeaweedFS-backed, pinned to seir).
 - `--out`: output dir under the vault (default `_concepts`, matching the
   Dreamer). The note is written to `<out>/<slug>.md`.
-- `--model`: defaults to `claude-sonnet-4-6` (or `$VAULT_SYNTH_MODEL`).
+- `--model`: defaults to `auto/reasoning` (or `$VAULT_SYNTH_MODEL`).
 - `--url`: chat/completions base. Defaults to `$OMNIROUTE_URL` or
   `http://omniroute.apps.svc.cluster.local:20128/v1`. Auth is a Bearer
   token from `$ANTHROPIC_API_KEY` (the omniroute-secrets key).

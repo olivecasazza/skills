@@ -21,10 +21,10 @@ name: vault-classify-behavioral
 steps:
   - id: classify
     # classify-only (no --apply): the eval must not mutate the vault
-    run: vault-classify {{case.note_path}} --url $CHAT_URL --model claude-sonnet-4-6
+    run: vault-classify {{case.note_path}} --url $CHAT_URL --model auto/reasoning
     capture: predicted   # stdout = the category, one word
   - id: judge
-    uses: instructor-judge          # Instructor + omniroute (gpt-5.5)
+    uses: instructor-judge          # Instructor + omniroute (auto/reasoning)
     schema: CategoryVerdict
     inputs:
       predicted: "{{steps.classify.predicted}}"
@@ -87,7 +87,7 @@ Always run classify-only here (no `--apply`) so the eval never mutates the vault
 - [ ] `fixtures/*.md` — labeled notes spanning all 8 categories.
 - [ ] `cases.toml` — note → expected/acceptable label pairs.
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5).
+- [ ] `instructor-judge` step (Instructor → omniroute auto/reasoning).
 
 Until Archon is stood up, behavioral evals are run manually as above and the
 borderline decisions are eyeballed against the gold labels.

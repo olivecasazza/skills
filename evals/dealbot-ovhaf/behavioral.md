@@ -21,14 +21,14 @@ listing + an expected disposition + a rubric.
 name: dealbot-ovhaf-behavioral
 env:
   DEALBOT_BASE_URL: http://omniroute.apps.svc.cluster.local:20128/v1
-  DEALBOT_MODEL: claude-sonnet-4-6
+  DEALBOT_MODEL: auto/reasoning
   ANTHROPIC_API_KEY: ${omniroute-secrets.API_KEY_PRIMARY}
 steps:
   - id: evaluate
     run: dealbot-evaluate --json '{{case.listing | tojson}}'
     capture: stdout_json        # {title,url,alert_worthy,evaluation}
   - id: judge
-    uses: instructor-judge       # Instructor + omniroute (gpt-5.5 as judge)
+    uses: instructor-judge       # Instructor + omniroute (auto/reasoning as judge)
     schema: OvhafVerdict
     inputs:
       output: "{{steps.evaluate.stdout_json}}"
@@ -65,7 +65,7 @@ class OvhafVerdict(BaseModel):
 
 - [x] Deterministic structural eval (`test.py`) — wired as a flake check.
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5 as judge).
+- [ ] `instructor-judge` step (Instructor → omniroute auto/reasoning as judge).
 - [ ] `cases.toml` with the listings/dispositions above.
 
 Until Archon is stood up, behavioral evals are run manually: pipe a known listing

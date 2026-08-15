@@ -20,14 +20,14 @@ dealbot-evaluate --title "5995WX + WRX80E-SAGE combo" --price '$1100' \
                  --url https://example.com/itm/123
 # or pipe a listing object:
 cat listing.json | dealbot-evaluate            # {title,source,url,price_hint,text,flair}
-dealbot-evaluate --file listing.json --model gpt-5.5
+dealbot-evaluate --file listing.json --model auto/best-reasoning
 ```
 
 - Listing fields: `title`, `source`, `url`, `price_hint`, `text`, `flair`.
   Provide via `--title/--price/--text/--url/--flair/--source`, `--json`,
   `--file`, or stdin JSON.
-- `--model`: defaults to `$DEALBOT_MODEL` or `claude-sonnet-4-6`. The gateway
-  also serves `gpt-5.5` and `gemini-3-flash-preview`.
+- `--model`: defaults to `$DEALBOT_MODEL` or the `auto/reasoning` routing
+  intent; `GET /v1/models` on the gateway lists the full set.
 - `--url-base`: chat/completions base URL. Defaults to `$DEALBOT_BASE_URL`
   or the in-cluster gateway
   `http://omniroute.apps.svc.cluster.local:20128/v1`.

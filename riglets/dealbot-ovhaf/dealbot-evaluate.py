@@ -16,7 +16,7 @@ Usage:
   dealbot-evaluate --title "5995WX + WRX80E-SAGE combo" --price "$1100" \
                    --text "POSTs fine, CPU-Z attached, ..." --url https://...
   cat listing.json | dealbot-evaluate            # {title,source,url,price_hint,text,flair}
-  dealbot-evaluate --file listing.json --model claude-sonnet-4-6
+  dealbot-evaluate --file listing.json --model auto/reasoning
 
 Exit status: 0 if evaluated (regardless of verdict), non-zero only on usage/IO error.
 """

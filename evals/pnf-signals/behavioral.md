@@ -20,10 +20,10 @@ name: pnf-signals-behavioral
 steps:
   - id: scan
     # Replay a fixed scan so the judge sees a deterministic candidate set.
-    run: pnf-signals --raw evals/pnf-signals/fixture-scan.txt --model claude-sonnet-4-6
+    run: pnf-signals --raw evals/pnf-signals/fixture-scan.txt
     capture: stdout_json
   - id: judge
-    uses: instructor-judge        # Instructor + omniroute (gpt-5.5)
+    uses: instructor-judge        # Instructor + omniroute (auto/reasoning)
     schema: TriageVerdict
     inputs: { decisions: "{{scan.stdout_json}}", rubric: "{{case.rubric}}" }
 pass_if: "judge.gate_is_conservative and judge.no_floor_violations and not judge.auto_approved_without_optin"
@@ -64,7 +64,7 @@ pnf-signals --raw fixture-scan.txt 2>&1 | grep -i litellm || echo "no litellm re
 - [x] Deterministic structural eval (`test.py`) — parser + gate, wired as a flake check.
 - [ ] `fixture-scan.txt` — a saved `pnf scan sectors` dump for deterministic replay.
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5).
+- [ ] `instructor-judge` step (Instructor → omniroute auto/reasoning).
 - [ ] `cases.toml` with real scan/rubric pairs.
 
 Until Archon is stood up, behavioral evals are run manually with `pnf-signals`

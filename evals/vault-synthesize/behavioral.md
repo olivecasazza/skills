@@ -26,7 +26,7 @@ steps:
       {{#each case.members}}-n {{this}} {{/each}}
     capture: stdout            # the rendered concept note
   - id: judge
-    uses: instructor-judge     # Instructor + omniroute (gpt-5.5 as judge)
+    uses: instructor-judge     # Instructor + omniroute (auto/reasoning as judge)
     schema: ConceptVerdict
     inputs:
       note: "{{synthesize.stdout}}"
@@ -35,10 +35,11 @@ steps:
 pass_if: "judge.fuses_members and judge.links_all_members and judge.score >= 4"
 ```
 
-The judge model is `gpt-5.5` via the same omniroute gateway the tool synthesizes
-against (`http://omniroute.apps.svc.cluster.local:20128/v1`, Bearer
-`$ANTHROPIC_API_KEY`) — a different model from the synthesizer (`claude-sonnet-4-6`)
-to avoid a model grading itself.
+The judge calls the same omniroute gateway the tool synthesizes against
+(`http://omniroute.apps.svc.cluster.local:20128/v1`, Bearer
+`$ANTHROPIC_API_KEY`) with the `auto/reasoning` routing intent — the gateway
+routes judge and synthesizer independently, so the judge need not share the
+synthesizer's upstream.
 
 ### Instructor judge schema
 
@@ -57,7 +58,7 @@ class ConceptVerdict(BaseModel):
 - [ ] `fixture-vault/` with a few member notes per case.
 - [ ] `cases.toml` with real member-cluster / rubric pairs.
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5).
+- [ ] `instructor-judge` step (Instructor → omniroute auto/reasoning).
 
 Until Archon is stood up, run behavioral checks manually:
 

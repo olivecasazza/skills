@@ -14,7 +14,7 @@ update frontmatter, MERGE into Neo4j) — those side effects stay out of the too
 
 Usage:
   vault-classify --file inbox/note.md
-  vault-classify -f note.md --model gpt-5.5 --url http://omniroute.apps.svc.cluster.local:20128/v1
+  vault-classify -f note.md --model auto/fast --url http://omniroute.apps.svc.cluster.local:20128/v1
 
 Auth: Bearer token from $ANTHROPIC_API_KEY (the omniroute key). Stdlib only.
 """

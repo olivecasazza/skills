@@ -19,10 +19,9 @@ vault-organize --file inbox/some-note.md [--model M] [--url URL]
 
 - `--file` (required): path to a `.md` note. Leading YAML frontmatter is
   stripped before classification; body is truncated to 8000 chars.
-- `--model`: defaults to `$VAULT_MODEL` or `gemini-3-flash-preview`. Other
-  omniroute models: `gpt-5.5`, `claude-sonnet-4-6`. Vault triage on
-  truncated content is well within a fast model — no need to spend on a
-  frontier model.
+- `--model`: defaults to `$VAULT_MODEL` or the `auto/fast` routing
+  intent. Vault triage on truncated content is well within a fast model —
+  no need to spend on a frontier intent.
 - `--url`: chat backend. Defaults to `$OMNIROUTE_URL` or the in-cluster
   service `http://omniroute.apps.svc.cluster.local:20128/v1`.
 

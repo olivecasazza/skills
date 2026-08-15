@@ -4,7 +4,7 @@ The deterministic half (`test.py`) runs as a sandboxed `nix flake check` / `om c
 and proves the payload-build / response-parse / tweak contracts. This file is the
 **behavioral** half: given the skill, does an agent pick the right flow, invoke it
 with the right input, and surface a correct answer? It needs a live Langflow backend
-(with the LLM provider repointed off dead litellm — see SKILL.md caveat) plus an LLM
+(its LLM provider is the omniroute gateway — see SKILL.md) plus an LLM
 judge, so it runs under **Archon** (the workflow harness), not as a pure nix check.
 
 ## Contract
@@ -28,7 +28,7 @@ steps:
   - id: invoke
     run: langflow-run -f "{{case.flow}}" -i "{{case.input}}"
   - id: judge
-    uses: instructor-judge        # Instructor + omniroute (gpt-5.5)
+    uses: instructor-judge        # Instructor + omniroute (auto/reasoning)
     schema: FlowVerdict
     inputs:
       output: "{{invoke.stdout}}"
@@ -44,14 +44,14 @@ class FlowVerdict(BaseModel):
     answers_input: bool       # does the output actually respond to the input?
     on_rubric: bool           # does it satisfy the case's rubric?
     is_error: bool            # is the output a stack trace / provider error
-                              #   (e.g. dead-litellm connection refused) rather
+                              #   (e.g. a provider connection refused) rather
                               #   than a real flow answer?
     score: int = Field(ge=1, le=5)
     reasoning: str
 ```
 
 The judge calls omniroute (`http://omniroute.apps.svc.cluster.local:20128/v1`,
-model `gpt-5.5`, Bearer from `ANTHROPIC_API_KEY` / `omniroute-secrets`).
+model `auto/reasoning`, Bearer from `ANTHROPIC_API_KEY` / `omniroute-secrets`).
 
 ### Example cases (for `cases.toml`)
 
@@ -66,11 +66,11 @@ model `gpt-5.5`, Bearer from `ANTHROPIC_API_KEY` / `omniroute-secrets`).
 ## Status
 
 - [x] Deterministic structural eval (`test.py`) — wired as a flake check.
-- [ ] Backend LLM provider repoint (litellm:4000 → omniroute) — a prerequisite;
-      LLM-bearing flows error until `OPENAI_API_BASE` in the HelmRelease is fixed.
+- [x] Backend LLM provider repoint (litellm:4000 → omniroute) — done; the
+      HelmRelease `OPENAI_API_BASE` now targets the omniroute gateway.
 - [ ] Mint + store a `LANGFLOW_API_KEY` (none exists in `langflow-secrets` today).
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5).
+- [ ] `instructor-judge` step (Instructor → omniroute auto/reasoning).
 - [ ] `cases.toml` with real flow/input/rubric tuples.
 
 Until Archon is stood up, behavioral evals are run manually: `langflow-run --list`
