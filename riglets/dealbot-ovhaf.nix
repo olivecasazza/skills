@@ -8,7 +8,7 @@ _:
 }:
 let
   # The agent-facing front end to the nixlab DealBot brain (OVHAF evaluation).
-  # Stdlib-only Python (urllib) talking to the cliproxyapi chat/completions
+  # Stdlib-only Python (urllib) talking to the omniroute chat/completions
   # gateway — no openai package, no pip install — just wrap it with python3.
   dealbot-evaluate = pkgs.writeShellScriptBin "dealbot-evaluate" ''
     exec ${pkgs.python3}/bin/python3 ${./dealbot-ovhaf/dealbot-evaluate.py} "$@"

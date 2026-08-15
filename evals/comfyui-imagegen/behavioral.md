@@ -21,7 +21,7 @@ steps:
   - id: render
     run: comfyui-generate -w evals/comfyui-imagegen/fixture-workflow.json -p "{{case.prompt}}" -o ./out
   - id: judge
-    uses: instructor-judge        # Instructor + cliproxyapi (gpt-5.5)
+    uses: instructor-judge        # Instructor + omniroute (gpt-5.5)
     schema: ImageVerdict
     inputs: { image: ./out, rubric: "{{case.rubric}}" }
 pass_if: "judge.matches_intent and judge.no_artifacts"
@@ -41,7 +41,7 @@ class ImageVerdict(BaseModel):
 
 - [x] Deterministic structural eval (`test.py`) — wired as a flake check.
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → cliproxyapi gpt-5.5).
+- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5).
 - [ ] `cases.toml` with real prompt/rubric pairs.
 
 Until Archon is stood up, behavioral evals are run manually with `comfyui-generate`

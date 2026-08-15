@@ -10,7 +10,7 @@ cluster of related notes and write a tight concept note that links them.
 This skill REPLACES waiting for the cron to find a cluster. You — the
 agent — decide which notes belong together (you are better at clustering
 than the old pgvector cosine threshold), then call the tool to synthesize
-the concept. The backend is the in-cluster **cliproxyapi** gateway, not
+the concept. The backend is the in-cluster **omniroute** gateway, not
 the dead `litellm:4000`.
 
 ## Tool: `vault-synthesize`
@@ -28,9 +28,9 @@ vault-synthesize -n NOTE.md -n NOTE.md [-n NOTE.md ...] \
 - `--out`: output dir under the vault (default `_concepts`, matching the
   Dreamer). The note is written to `<out>/<slug>.md`.
 - `--model`: defaults to `claude-sonnet-4-6` (or `$VAULT_SYNTH_MODEL`).
-- `--url`: chat/completions base. Defaults to `$CLIPROXY_URL` or
-  `http://cliproxyapi.apps.svc.cluster.local:8317/v1`. Auth is a Bearer
-  token from `$ANTHROPIC_API_KEY` (the cliproxyapi-secrets key).
+- `--url`: chat/completions base. Defaults to `$OMNIROUTE_URL` or
+  `http://omniroute.apps.svc.cluster.local:20128/v1`. Auth is a Bearer
+  token from `$ANTHROPIC_API_KEY` (the omniroute-secrets key).
 - `--dry-run`: print the rendered note to stdout instead of writing it.
 
 ## Typical use
@@ -48,7 +48,7 @@ vault-synthesize --vault /vault \
 ## How it works (so you can debug)
 
 1. Read each member note, strip frontmatter, take a title + ~1500-char excerpt.
-2. POST a chat/completions request to the cliproxyapi gateway asking for a
+2. POST a chat/completions request to the omniroute gateway asking for a
    200-word concept summary ending in a `[[wiki-link]]` Members list.
 3. Assemble a concept note: frontmatter `{tags:[concept,auto-generated],
    slug, members, generated_at}` + the LLM body. If the model omitted the
@@ -58,7 +58,7 @@ vault-synthesize --vault /vault \
    (idempotent) — exactly like the Dreamer's CronJob.
 
 If you get a 401, `ANTHROPIC_API_KEY` is unset/expired. A 502 from the
-gateway is a cliproxyapi backend concern, not a tool error.
+gateway is a omniroute backend concern, not a tool error.
 
 ## Out of scope
 

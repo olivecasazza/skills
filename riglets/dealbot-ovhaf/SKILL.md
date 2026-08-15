@@ -30,8 +30,8 @@ dealbot-evaluate --file listing.json --model gpt-5.5
   also serves `gpt-5.5` and `gemini-3-flash-preview`.
 - `--url-base`: chat/completions base URL. Defaults to `$DEALBOT_BASE_URL`
   or the in-cluster gateway
-  `http://cliproxyapi.apps.svc.cluster.local:8317/v1`.
-- Auth: `Authorization: Bearer $ANTHROPIC_API_KEY` (the cliproxyapi-secrets
+  `http://omniroute.apps.svc.cluster.local:20128/v1`.
+- Auth: `Authorization: Bearer $ANTHROPIC_API_KEY` (the omniroute-secrets
   key). The litellm:4000 gateway is dead — do not point at it.
 
 ## Reading the output

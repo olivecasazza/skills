@@ -4,7 +4,7 @@ The deterministic half (`test.py`) runs as a sandboxed `nix flake check` / `om c
 and proves the pure contract: slug determinism, payload shape, response parsing,
 concept-note assembly. This file is the **behavioral** half: given the skill, does
 an agent actually produce a *good* concept note from a real cluster? It needs a
-live cliproxyapi backend + an LLM judge, so it runs under **Archon** (the workflow
+live omniroute backend + an LLM judge, so it runs under **Archon** (the workflow
 harness), not as a pure nix check.
 
 ## Contract
@@ -26,7 +26,7 @@ steps:
       {{#each case.members}}-n {{this}} {{/each}}
     capture: stdout            # the rendered concept note
   - id: judge
-    uses: instructor-judge     # Instructor + cliproxyapi (gpt-5.5 as judge)
+    uses: instructor-judge     # Instructor + omniroute (gpt-5.5 as judge)
     schema: ConceptVerdict
     inputs:
       note: "{{synthesize.stdout}}"
@@ -35,8 +35,8 @@ steps:
 pass_if: "judge.fuses_members and judge.links_all_members and judge.score >= 4"
 ```
 
-The judge model is `gpt-5.5` via the same cliproxyapi gateway the tool synthesizes
-against (`http://cliproxyapi.apps.svc.cluster.local:8317/v1`, Bearer
+The judge model is `gpt-5.5` via the same omniroute gateway the tool synthesizes
+against (`http://omniroute.apps.svc.cluster.local:20128/v1`, Bearer
 `$ANTHROPIC_API_KEY`) — a different model from the synthesizer (`claude-sonnet-4-6`)
 to avoid a model grading itself.
 
@@ -57,7 +57,7 @@ class ConceptVerdict(BaseModel):
 - [ ] `fixture-vault/` with a few member notes per case.
 - [ ] `cases.toml` with real member-cluster / rubric pairs.
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → cliproxyapi gpt-5.5).
+- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5).
 
 Until Archon is stood up, run behavioral checks manually:
 

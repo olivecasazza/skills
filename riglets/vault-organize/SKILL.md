@@ -5,7 +5,7 @@ This REPLACES the `langgraph-organize` CronJob (a LangGraph graph that
 ran every 4h against `/mnt/seaweedfs/obsidian-vault`). The graph's
 load-bearing step was a single strict-JSON classification call against
 LiteLLM:4000 — which is dead. This skill is that step, repointed at the
-live cliproxyapi gateway, with the orchestration (loop, Neo4j write,
+live omniroute gateway, with the orchestration (loop, Neo4j write,
 file move) handed back to you, the agent.
 
 ## Tool: `vault-organize`
@@ -20,14 +20,14 @@ vault-organize --file inbox/some-note.md [--model M] [--url URL]
 - `--file` (required): path to a `.md` note. Leading YAML frontmatter is
   stripped before classification; body is truncated to 8000 chars.
 - `--model`: defaults to `$VAULT_MODEL` or `gemini-3-flash-preview`. Other
-  cliproxyapi models: `gpt-5.5`, `claude-sonnet-4-6`. Vault triage on
+  omniroute models: `gpt-5.5`, `claude-sonnet-4-6`. Vault triage on
   truncated content is well within a fast model — no need to spend on a
   frontier model.
-- `--url`: chat backend. Defaults to `$CLIPROXY_URL` or the in-cluster
-  service `http://cliproxyapi.apps.svc.cluster.local:8317/v1`.
+- `--url`: chat backend. Defaults to `$OMNIROUTE_URL` or the in-cluster
+  service `http://omniroute.apps.svc.cluster.local:20128/v1`.
 
-Auth: Bearer token read from `$ANTHROPIC_API_KEY` (the cliproxyapi key,
-sourced from the `cliproxyapi-secrets` secret in-cluster).
+Auth: Bearer token read from `$ANTHROPIC_API_KEY` (the omniroute key,
+sourced from the `omniroute-secrets` secret in-cluster).
 
 Output schema (always these four fields, well-typed):
 
@@ -60,12 +60,12 @@ done
 ## How it works (so you can debug)
 
 1. Read the note, strip frontmatter, truncate to 8000 chars.
-2. POST a `chat/completions` request to cliproxyapi (`temperature=0`,
+2. POST a `chat/completions` request to omniroute (`temperature=0`,
    strict-JSON instruction prompt).
 3. Parse the reply, tolerate code fences, validate `category`, normalize.
 
 If the request fails, check that `ANTHROPIC_API_KEY` is set and that
-cliproxyapi is reachable. If the parse fails, the raw reply is printed to
+omniroute is reachable. If the parse fails, the raw reply is printed to
 stderr — usually a model that ignored the "no fences / object only"
 instruction; retry with a different `--model`.
 

@@ -7,7 +7,7 @@ notes into category folders. This tool exposes the same single-note decision so
 an agent can classify (and optionally route) one note on demand.
 
 Given a markdown note (frontmatter + body), it asks the chat backend
-(cliproxyapi, OpenAI-compatible /v1/chat/completions) to pick ONE category from
+(omniroute, OpenAI-compatible /v1/chat/completions) to pick ONE category from
 a fixed destination set, normalizes the model's answer, and prints the category.
 With --apply it also moves the note + its .embeddings.json sidecar into
 <vault>/<category>/ and stamps the frontmatter (category/<cat> tag,
@@ -32,9 +32,9 @@ import sys
 import urllib.request
 
 DEFAULT_URL = os.environ.get(
-    "CHAT_URL", "http://cliproxyapi.apps.svc.cluster.local:8317/v1"
+    "CHAT_URL", "http://omniroute.apps.svc.cluster.local:20128/v1"
 )
-DEFAULT_MODEL = os.environ.get("CLASSIFY_MODEL", "claude-sonnet-4-6")
+DEFAULT_MODEL = os.environ.get("CLASSIFY_MODEL", "auto/reasoning")
 DEFAULT_DESTINATIONS = os.environ.get(
     "CLASSIFY_DESTINATIONS",
     "personal,projects,cluster,reference,research,journal,docs,archive",

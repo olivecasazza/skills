@@ -3,7 +3,7 @@
 The deterministic half (`test.py`) runs as a sandboxed `nix flake check` / `om ci`
 and proves the payload/parse/verdict contract with no network. This file is the
 **behavioral** half: given a real listing, does the agent (driving
-`dealbot-evaluate` against the live cliproxyapi backend) produce a sound OVHAF
+`dealbot-evaluate` against the live omniroute backend) produce a sound OVHAF
 verdict? It needs the live gateway + an LLM judge, so it runs under **Archon** (the
 workflow harness), not as a pure nix check.
 
@@ -20,15 +20,15 @@ listing + an expected disposition + a rubric.
 # evals/dealbot-ovhaf/behavioral.archon.yaml  (run when Archon is deployed)
 name: dealbot-ovhaf-behavioral
 env:
-  DEALBOT_BASE_URL: http://cliproxyapi.apps.svc.cluster.local:8317/v1
+  DEALBOT_BASE_URL: http://omniroute.apps.svc.cluster.local:20128/v1
   DEALBOT_MODEL: claude-sonnet-4-6
-  ANTHROPIC_API_KEY: ${cliproxyapi-secrets.ANTHROPIC_API_KEY}
+  ANTHROPIC_API_KEY: ${omniroute-secrets.API_KEY_PRIMARY}
 steps:
   - id: evaluate
     run: dealbot-evaluate --json '{{case.listing | tojson}}'
     capture: stdout_json        # {title,url,alert_worthy,evaluation}
   - id: judge
-    uses: instructor-judge       # Instructor + cliproxyapi (gpt-5.5 as judge)
+    uses: instructor-judge       # Instructor + omniroute (gpt-5.5 as judge)
     schema: OvhafVerdict
     inputs:
       output: "{{steps.evaluate.stdout_json}}"
@@ -65,7 +65,7 @@ class OvhafVerdict(BaseModel):
 
 - [x] Deterministic structural eval (`test.py`) — wired as a flake check.
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → cliproxyapi gpt-5.5 as judge).
+- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5 as judge).
 - [ ] `cases.toml` with the listings/dispositions above.
 
 Until Archon is stood up, behavioral evals are run manually: pipe a known listing

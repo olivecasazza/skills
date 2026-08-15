@@ -6,7 +6,7 @@ asserts the pure-logic contract that the agent relies on — slug determinism,
 chat/completions payload shape, response parsing, and concept-note assembly
 (member preservation + wiki-link fallback). This is the structural half; the
 behavioral half (is the synthesis actually good?) is the Archon/Instructor
-workflow in behavioral.md, which needs the live cliproxyapi backend.
+workflow in behavioral.md, which needs the live omniroute backend.
 
 Convention: ROOT = parents[2]; load_tool via importlib; assert; print PASS.
 The flake auto-registers this as `checks.<system>.vault-synthesize-eval`.
@@ -44,8 +44,8 @@ def main():
 
     # 2. Payload shape: right model, system + user messages, divider-joined notes.
     snippets = ["### A\n\nalpha body", "### B\n\nbeta body"]
-    payload = tool.build_payload(snippets, model="claude-sonnet-4-6")
-    assert payload["model"] == "claude-sonnet-4-6", "model not threaded into payload"
+    payload = tool.build_payload(snippets, model="auto/reasoning")
+    assert payload["model"] == "auto/reasoning", "model not threaded into payload"
     # Determinism invariant: temperature 0 (reproducible synthesis).
     assert payload["temperature"] == 0, "temperature must be 0 for deterministic synthesis"
     roles = [m["role"] for m in payload["messages"]]

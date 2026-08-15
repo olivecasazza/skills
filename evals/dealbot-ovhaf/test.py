@@ -7,7 +7,7 @@ model reply parser strips code fences, and the `should_alert` verdict gate honor
 DealBot's buy/watch/reject rules (sold markers, RDIMM-vs-UDIMM rejection, and the
 PSB/score/quotient threshold). This is the structural half; the behavioral half
 (does the LLM produce a sound OVHAF verdict?) is the Archon/Instructor workflow in
-behavioral.md, which needs the live cliproxyapi backend.
+behavioral.md, which needs the live omniroute backend.
 
 Convention: every skill with deterministic guarantees gets evals/<skill>/test.py.
 The flake auto-registers each as `checks.<system>.<skill>-eval`.
@@ -39,8 +39,8 @@ def main():
         "price_hint": "$1100",
         "text": "POSTs fine, CPU-Z attached, retail unlocked chip.",
     }
-    payload = tool.build_payload(deal, "claude-sonnet-4-6")
-    assert payload["model"] == "claude-sonnet-4-6", "model not set on payload"
+    payload = tool.build_payload(deal, "auto/reasoning")
+    assert payload["model"] == "auto/reasoning", "model not set on payload"
     # Determinism invariant: temperature 0 + structured output.
     assert payload["temperature"] == 0, "temperature must be 0 for deterministic verdicts"
     assert payload["response_format"] == {"type": "json_object"}, "must request structured JSON output"

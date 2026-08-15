@@ -9,7 +9,7 @@ drives. Scrape/notify are retired; the agent supplies the listing (paste, fetch,
 or pipe) and gets back strict OVHAF JSON + a buy/watch/reject verdict.
 
 Reads a listing from --file, --json, or stdin and POSTs an OVHAF prompt to the
-cliproxyapi chat/completions gateway. Stdlib only (urllib/json/argparse) — no
+omniroute chat/completions gateway. Stdlib only (urllib/json/argparse) — no
 openai package, no pip install.
 
 Usage:
@@ -27,11 +27,11 @@ import re
 import sys
 import urllib.request
 
-# cliproxyapi chat/completions gateway (litellm:4000 is dead). Override with $DEALBOT_BASE_URL.
+# omniroute chat/completions gateway (litellm:4000 is dead). Override with $DEALBOT_BASE_URL.
 DEFAULT_URL = os.environ.get(
-    "DEALBOT_BASE_URL", "http://cliproxyapi.apps.svc.cluster.local:8317/v1"
+    "DEALBOT_BASE_URL", "http://omniroute.apps.svc.cluster.local:20128/v1"
 )
-DEFAULT_MODEL = os.environ.get("DEALBOT_MODEL", "claude-sonnet-4-6")
+DEFAULT_MODEL = os.environ.get("DEALBOT_MODEL", "auto/reasoning")
 
 OVHAF_PROMPT = """
 You are DealBot v2, applying the Opti-Value Hardware Acquisition Framework (OVHAF) to used workstation hardware.

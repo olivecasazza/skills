@@ -6,7 +6,7 @@ its pure-logic contract — frontmatter stripping, chat payload construction,
 content truncation, and strict-JSON parse/normalize (category validation, fence
 stripping, type coercion). The behavioral half (does the model classify well?)
 is the Archon/Instructor workflow in behavioral.md, which needs the live
-cliproxyapi backend.
+omniroute backend.
 
 Convention: every skill with deterministic guarantees gets evals/<skill>/test.py.
 The flake auto-registers each as `checks.<system>.<skill>-eval`.
@@ -39,8 +39,8 @@ def main():
 
     # 2. Payload construction: model, temperature=0, single user message with
     #    the note content embedded; empty notes get a placeholder.
-    payload = tool.build_payload("hello world", "gpt-5.5")
-    assert payload["model"] == "gpt-5.5", "model not set"
+    payload = tool.build_payload("hello world", "auto/coding")
+    assert payload["model"] == "auto/coding", "model not set"
     assert payload["temperature"] == 0, "temperature must be 0 for determinism"
     assert len(payload["messages"]) == 1 and payload["messages"][0]["role"] == "user"
     assert "hello world" in payload["messages"][0]["content"], "content not embedded"

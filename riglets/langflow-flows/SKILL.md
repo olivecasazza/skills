@@ -70,8 +70,8 @@ langflow-run -f "$(langflow-run --list | awk '/MUTHA-VA/{print $1}')" \
 Flows that call a language model route through Langflow's `OPENAI_API_BASE`
 env. The HelmRelease still points this at the **dead** `litellm.apps:4000`
 gateway. Any flow with an LLM/embedding node will fail at that node until the
-backend env is repointed to the live cliproxyapi gateway
-(`http://cliproxyapi.apps.svc.cluster.local:8317/v1`) for chat and
+backend env is repointed to the live omniroute gateway
+(`http://omniroute.apps.svc.cluster.local:20128/v1`) for chat and
 `http://tei.apps.svc.cluster.local` for embeddings. That is a backend config
 change in `modules/k8s/apps/langflow/default.nix`, not something this tool
 does — but it is the most likely reason a run returns an error mid-flow.

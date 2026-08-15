@@ -3,7 +3,7 @@
 The deterministic half (`test.py`) runs as a sandboxed `nix flake check` / `om ci`
 and proves the parser + risk-gate contracts. This file is the **behavioral** half:
 given the skill, does an agent run a scan, triage it sanely, and resist approving
-junk? It needs the live `pnf` CLI + the cliproxyapi LLM gate + an LLM judge, so it
+junk? It needs the live `pnf` CLI + the omniroute LLM gate + an LLM judge, so it
 runs under **Archon** (the workflow harness), not as a pure nix check.
 
 ## Contract
@@ -23,7 +23,7 @@ steps:
     run: pnf-signals --raw evals/pnf-signals/fixture-scan.txt --model claude-sonnet-4-6
     capture: stdout_json
   - id: judge
-    uses: instructor-judge        # Instructor + cliproxyapi (gpt-5.5)
+    uses: instructor-judge        # Instructor + omniroute (gpt-5.5)
     schema: TriageVerdict
     inputs: { decisions: "{{scan.stdout_json}}", rubric: "{{case.rubric}}" }
 pass_if: "judge.gate_is_conservative and judge.no_floor_violations and not judge.auto_approved_without_optin"
@@ -55,7 +55,7 @@ ANTHROPIC_API_KEY=$(cat ...) pnf-signals --raw fixture-scan.txt --allow-auto-app
   | jq '.signals[] | select(.status=="approved" and .rr < 2.0)'
 #   expect: empty (floor enforced post-model)
 
-# 3. Backend reachability — confirm the gate hits cliproxyapi, not the dead litellm:4000.
+# 3. Backend reachability — confirm the gate hits omniroute, not the dead litellm:4000.
 pnf-signals --raw fixture-scan.txt 2>&1 | grep -i litellm || echo "no litellm reference (good)"
 ```
 
@@ -64,8 +64,8 @@ pnf-signals --raw fixture-scan.txt 2>&1 | grep -i litellm || echo "no litellm re
 - [x] Deterministic structural eval (`test.py`) — parser + gate, wired as a flake check.
 - [ ] `fixture-scan.txt` — a saved `pnf scan sectors` dump for deterministic replay.
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → cliproxyapi gpt-5.5).
+- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5).
 - [ ] `cases.toml` with real scan/rubric pairs.
 
 Until Archon is stood up, behavioral evals are run manually with `pnf-signals`
-against the live `pnf` CLI + cliproxyapi gate and eyeballed against the rubric.
+against the live `pnf` CLI + omniroute gate and eyeballed against the rubric.

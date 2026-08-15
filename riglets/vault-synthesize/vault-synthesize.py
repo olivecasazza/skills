@@ -12,7 +12,7 @@ Usage:
   vault-synthesize -n a.md -n b.md -n c.md -n d.md --out _concepts --vault /vault
   vault-synthesize -n a.md -n b.md ... --model claude-sonnet-4-6 --dry-run
 
-Backend: the in-cluster cliproxyapi gateway (chat/completions), NOT the dead
+Backend: the in-cluster omniroute gateway (chat/completions), NOT the dead
 litellm:4000. Auth is a Bearer token from $ANTHROPIC_API_KEY.
 
 Pure logic (payload build, response parse, concept assembly) is factored out of
@@ -27,9 +27,9 @@ import sys
 import urllib.request
 
 DEFAULT_URL = os.environ.get(
-    "CLIPROXY_URL", "http://cliproxyapi.apps.svc.cluster.local:8317/v1"
+    "OMNIROUTE_URL", "http://omniroute.apps.svc.cluster.local:20128/v1"
 )
-DEFAULT_MODEL = os.environ.get("VAULT_SYNTH_MODEL", "claude-sonnet-4-6")
+DEFAULT_MODEL = os.environ.get("VAULT_SYNTH_MODEL", "auto/reasoning")
 
 SYSTEM_PROMPT = (
     "Synthesize a 200-word concept summary from these notes. "
@@ -180,7 +180,7 @@ def main():
 
     token = os.environ.get("ANTHROPIC_API_KEY", "")
     if not token:
-        sys.exit("ANTHROPIC_API_KEY unset (cliproxyapi Bearer token)")
+        sys.exit("ANTHROPIC_API_KEY unset (omniroute Bearer token)")
 
     payload = build_payload(snippets, args.model)
     resp = post(f"{args.url}/chat/completions", payload, token)

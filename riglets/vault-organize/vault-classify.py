@@ -5,18 +5,18 @@ The agent-facing front end to the nixlab "langgraph-organize" pipeline. The old
 deployment was a CronJob running a LangGraph graph (scan inbox -> classify via
 LiteLLM -> write Neo4j -> move file). LiteLLM:4000 is dead and the graph
 machinery is overkill: the load-bearing step is a single strict-JSON
-classification call. This tool is that step, repointed at cliproxyapi.
+classification call. This tool is that step, repointed at omniroute.
 
 It reads ONE markdown note, strips YAML frontmatter, builds a chat/completions
-payload, calls the cliproxyapi gateway, and prints the normalized classification
+payload, calls the omniroute gateway, and prints the normalized classification
 JSON on stdout. The agent decides what to do with the verdict (move the file,
 update frontmatter, MERGE into Neo4j) — those side effects stay out of the tool.
 
 Usage:
   vault-classify --file inbox/note.md
-  vault-classify -f note.md --model gpt-5.5 --url http://cliproxyapi.apps.svc.cluster.local:8317/v1
+  vault-classify -f note.md --model gpt-5.5 --url http://omniroute.apps.svc.cluster.local:20128/v1
 
-Auth: Bearer token from $ANTHROPIC_API_KEY (the cliproxyapi key). Stdlib only.
+Auth: Bearer token from $ANTHROPIC_API_KEY (the omniroute key). Stdlib only.
 """
 import argparse
 import json
@@ -26,9 +26,9 @@ import sys
 import urllib.request
 
 DEFAULT_URL = os.environ.get(
-    "CLIPROXY_URL", "http://cliproxyapi.apps.svc.cluster.local:8317/v1"
+    "OMNIROUTE_URL", "http://omniroute.apps.svc.cluster.local:20128/v1"
 )
-DEFAULT_MODEL = os.environ.get("VAULT_MODEL", "gemini-3-flash-preview")
+DEFAULT_MODEL = os.environ.get("VAULT_MODEL", "auto/fast")
 
 # Mirrors VALID_CATEGORIES from the original organize.py graph.
 VALID_CATEGORIES = {
@@ -151,13 +151,13 @@ def main():
         "-m", "--model", default=DEFAULT_MODEL, help=f"Model (default: {DEFAULT_MODEL})"
     )
     ap.add_argument(
-        "-u", "--url", default=DEFAULT_URL, help=f"cliproxyapi base URL (default: {DEFAULT_URL})"
+        "-u", "--url", default=DEFAULT_URL, help=f"omniroute base URL (default: {DEFAULT_URL})"
     )
     args = ap.parse_args()
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
-        sys.exit("ANTHROPIC_API_KEY (cliproxyapi key) is not set")
+        sys.exit("ANTHROPIC_API_KEY (omniroute key) is not set")
 
     with open(args.file, encoding="utf-8") as fh:
         body = strip_frontmatter(fh.read())

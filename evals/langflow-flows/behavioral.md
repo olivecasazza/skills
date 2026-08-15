@@ -28,7 +28,7 @@ steps:
   - id: invoke
     run: langflow-run -f "{{case.flow}}" -i "{{case.input}}"
   - id: judge
-    uses: instructor-judge        # Instructor + cliproxyapi (gpt-5.5)
+    uses: instructor-judge        # Instructor + omniroute (gpt-5.5)
     schema: FlowVerdict
     inputs:
       output: "{{invoke.stdout}}"
@@ -50,8 +50,8 @@ class FlowVerdict(BaseModel):
     reasoning: str
 ```
 
-The judge calls cliproxyapi (`http://cliproxyapi.apps.svc.cluster.local:8317/v1`,
-model `gpt-5.5`, Bearer from `ANTHROPIC_API_KEY` / `cliproxyapi-secrets`).
+The judge calls omniroute (`http://omniroute.apps.svc.cluster.local:20128/v1`,
+model `gpt-5.5`, Bearer from `ANTHROPIC_API_KEY` / `omniroute-secrets`).
 
 ### Example cases (for `cases.toml`)
 
@@ -66,11 +66,11 @@ model `gpt-5.5`, Bearer from `ANTHROPIC_API_KEY` / `cliproxyapi-secrets`).
 ## Status
 
 - [x] Deterministic structural eval (`test.py`) — wired as a flake check.
-- [ ] Backend LLM provider repoint (litellm:4000 → cliproxyapi) — a prerequisite;
+- [ ] Backend LLM provider repoint (litellm:4000 → omniroute) — a prerequisite;
       LLM-bearing flows error until `OPENAI_API_BASE` in the HelmRelease is fixed.
 - [ ] Mint + store a `LANGFLOW_API_KEY` (none exists in `langflow-secrets` today).
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → cliproxyapi gpt-5.5).
+- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5).
 - [ ] `cases.toml` with real flow/input/rubric tuples.
 
 Until Archon is stood up, behavioral evals are run manually: `langflow-run --list`

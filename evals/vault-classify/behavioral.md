@@ -3,7 +3,7 @@
 The deterministic half (`test.py`) runs as a sandboxed `nix flake check` / `om ci`
 and proves the payload/normalization/stamping contract. This file is the
 **behavioral** half: given the skill, does an agent route notes into the *right*
-category? It needs a live chat backend (cliproxyapi) + an LLM judge, so it runs
+category? It needs a live chat backend (omniroute) + an LLM judge, so it runs
 under **Archon** (the workflow harness), not as a pure nix check.
 
 ## Contract
@@ -24,7 +24,7 @@ steps:
     run: vault-classify {{case.note_path}} --url $CHAT_URL --model claude-sonnet-4-6
     capture: predicted   # stdout = the category, one word
   - id: judge
-    uses: instructor-judge          # Instructor + cliproxyapi (gpt-5.5)
+    uses: instructor-judge          # Instructor + omniroute (gpt-5.5)
     schema: CategoryVerdict
     inputs:
       predicted: "{{steps.classify.predicted}}"
@@ -71,8 +71,8 @@ acceptable = ["research", "reference"]
 ## Manual run (until Archon is stood up)
 
 ```bash
-export CHAT_URL=http://cliproxyapi.apps.svc.cluster.local:8317/v1
-export ANTHROPIC_API_KEY=...        # cliproxyapi-secrets
+export CHAT_URL=http://omniroute.apps.svc.cluster.local:20128/v1
+export ANTHROPIC_API_KEY=...        # omniroute-secrets
 for f in evals/vault-classify/fixtures/*.md; do
   printf '%s\t' "$f"; vault-classify "$f"
 done
@@ -87,7 +87,7 @@ Always run classify-only here (no `--apply`) so the eval never mutates the vault
 - [ ] `fixtures/*.md` — labeled notes spanning all 8 categories.
 - [ ] `cases.toml` — note → expected/acceptable label pairs.
 - [ ] Archon deployment (separate task — Archon is a service: see coleam00/Archon).
-- [ ] `instructor-judge` step (Instructor → cliproxyapi gpt-5.5).
+- [ ] `instructor-judge` step (Instructor → omniroute gpt-5.5).
 
 Until Archon is stood up, behavioral evals are run manually as above and the
 borderline decisions are eyeballed against the gold labels.

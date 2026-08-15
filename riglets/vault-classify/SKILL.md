@@ -30,10 +30,10 @@ cat NOTE.md | vault-classify -      # classify only, no file moves
 - `--model`: chat model. Default `claude-sonnet-4-6`. Also valid on the
   backend: `gpt-5.5`, `gemini-3-flash-preview`.
 - `--url`: chat base URL. Default `$CHAT_URL` or the in-cluster service
-  `http://cliproxyapi.apps.svc.cluster.local:8317/v1`. (The old
+  `http://omniroute.apps.svc.cluster.local:20128/v1`. (The old
   `litellm:4000` gateway is dead — do not use it.)
 - `--key`: Bearer token. Default `$ANTHROPIC_API_KEY`
-  (the `cliproxyapi-secrets` value in-cluster).
+  (the `omniroute-secrets` value in-cluster).
 - `--destinations`: comma-separated category set. Default:
   `personal,projects,cluster,reference,research,journal,docs,archive`.
   Must match the folders provisioned in the obsidian home-manager module —
