@@ -15,10 +15,10 @@ Never point a raw pod at a GPU node outside these lanes.
 | Node | GPUs | Access path |
 |---|---|---|
 | hp01-03 | 3x RTX 4000 (8 GB), autoscale-to-zero | Kueue `hp-gpu` (rtx4000 flavor) or SkyPilot |
-| seir | 2x RTX 5000 (16 GB) | 1 reserved (comfyui webui); 1 via Kueue `hp-gpu` (rtx5000 flavor) |
+| seir | 2x RTX 5000 (16 GB) | 1 held by comfyui **only while awake** (sablier scales it to zero after 30m idle); 1 via Kueue `hp-gpu` (rtx5000 flavor) |
 | tyan01 | 8x GTX Titan Black (6 GB, Kepler, CUDA <= 11.4) | 1 reserved (tei); 7 via Kueue `kepler-gpu` |
 | traitor | 1x RX 7900 XTX (ROCm gfx1100) | reserved (tei-amd); no queue — single card |
-| contra | 1x RTX 4000 SFF Ada | reserved (Plex transcode); NEVER schedule GPU work here |
+| contra | 1x RTX 4000 SFF Ada (20 GB) | shared: Plex transcode (non-exclusive NVENC, no resource request) + opt-in batch via Kueue `ada-gpu` — leave ~4 GB VRAM for transcodes |
 
 Source of truth for queues/quotas: `nixlab/modules/k8s/kueue/queues.nix`.
 
@@ -32,6 +32,7 @@ LocalQueues → ClusterQueues:
 | `spot-gpu` | hpc | `hp-gpu` | same shared quota |
 | `athena-kepler` | apps | `kepler-gpu` | Titan Black x7 |
 | `spot-kepler` | hpc | `kepler-gpu` | same shared quota |
+| `athena-ada` | apps | `ada-gpu` | contra Ada x1, opt-in, shared with Plex |
 
 How to submit:
 - **athena Experiment/BenchmarkRun**: set `spec.scheduling.queueName` on the
@@ -60,8 +61,14 @@ Mechanics worth knowing:
 
 ## Lane 2 — resident GPU services
 
-comfyui (seir), tei (tyan01), tei-amd (traitor), Plex (contra). Rules when
-adding or moving one:
+tei (tyan01), tei-amd (traitor), Plex (contra) — plus comfyui (seir), which
+is Lane-2-only-while-awake: sablier scales it to zero after 30m without
+traffic and wakes it on demand. To use ComfyUI from an agent, go THROUGH the
+wake route so your traffic renews the session:
+`curl -H 'Host: comfyui.casazza.io' http://traefik.kube-system.svc.cluster.local/system_stats`
+(first hit returns an HTML loading page; poll until JSON, ~30-60s). Calling
+`comfyui.apps.svc:8188` directly neither wakes nor renews. Rules when
+adding or moving a resident:
 - Explicit `nodeSelector` on `kubernetes.io/hostname` + the node's GPU
   taint tolerations. No floating `gpu.present=true` selectors — a drifting
   service silently breaks quota math.
@@ -81,12 +88,15 @@ entirely and compete with admitted jobs for the same free GPUs, so:
 - Valid on-prem accelerators: `QUADRO-RTX4000`, `QUADRO-RTX5000` only.
   tyan01 and traitor are unreachable from SkyPilot.
 
-## Plex / media transcode
+## Plex / media transcode + the ada-gpu lane
 
 Plex holds contra's GPU via `runtimeClassName: nvidia` device access with
-NO `nvidia.com/gpu` resource request (deliberate — non-exclusive). contra
-has no `gpu.product` label, so no Kueue flavor can ever place work there.
-Keep it that way.
+NO `nvidia.com/gpu` resource request (deliberate — non-exclusive). Batch
+work CAN share the card via the opt-in `ada-gpu` queue (`apps/athena-ada`):
+transcoding uses the NVENC/NVDEC engines (separate silicon from CUDA), so
+the contract is VRAM, not compute — batch jobs must leave ~4 GB of the
+20 GB free for transcodes. Never target contra with a raw nodeSelector
+outside the queue.
 
 ## Verify
 

@@ -21,7 +21,7 @@ _:
         "kubernetes"
       ];
       status = "stable";
-      version = "0.1.0";
+      version = "0.2.0";
     };
 
     # Pure strategy doc — no tool script. SKILL.md lives on disk (not inline)
