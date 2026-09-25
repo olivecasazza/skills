@@ -5,19 +5,19 @@ description: How to place GPU work on the nixlab cluster — Kueue lanes, reside
 
 # GPU scheduling on nixlab
 
-One rule, three lanes. **Batch GPU work goes through Kueue. Resident GPU
-services get an explicit node pin and a documented quota carve-out.
-Interactive work (SkyPilot) uses leftover capacity and must idle-down.**
-Never point a raw pod at a GPU node outside these lanes.
+One rule, three lanes. **All GPU work goes through Kueue — batch, serving,
+and awake-on-demand alike; quota equals physical GPUs, there are no resident
+carve-outs. Interactive work (SkyPilot) is the only bypass and must
+idle-down.** Never point a raw pod at a GPU node outside these lanes.
 
-## Capacity map (2026-08)
+## Capacity map (2026-09)
 
 | Node | GPUs | Access path |
 |---|---|---|
 | hp01-03 | 3x RTX 4000 (8 GB), autoscale-to-zero | Kueue `hp-gpu` (rtx4000 flavor) or SkyPilot |
 | seir | 2x RTX 5000 (16 GB) | 1 held by comfyui **only while awake** (sablier scales it to zero after 30m idle); 1 via Kueue `hp-gpu` (rtx5000 flavor) |
-| tyan01 | 8x GTX Titan Black (6 GB, Kepler, CUDA <= 11.4) | 1 reserved (tei); 7 via Kueue `kepler-gpu` |
-| traitor | 1x RX 7900 XTX (ROCm gfx1100) | reserved (tei-amd); no queue — single card |
+| tyan01 | 8x GTX Titan Black (6 GB, Kepler, CUDA <= 11.4) | Kueue `kepler-gpu`, all 8 (tei accounted at `serving`) |
+| traitor | 1x RX 7900 XTX (ROCm gfx1100; plugin also enumerates an iGPU) | Kueue `amd-gpu` via `apps-amd` (tei-amd accounted at `serving`) |
 | contra | 1x RTX 4000 SFF Ada (20 GB) | shared: Plex transcode (non-exclusive NVENC, no resource request) + opt-in batch via Kueue `ada-gpu` — leave ~4 GB VRAM for transcodes |
 
 Source of truth for queues/quotas: `nixlab/modules/k8s/kueue/queues.nix`.
@@ -28,11 +28,13 @@ LocalQueues → ClusterQueues:
 
 | LocalQueue | Namespace | ClusterQueue | Hardware |
 |---|---|---|---|
-| `athena-gpu` | apps | `hp-gpu` | RTX 4000 x3 + RTX 5000 x1 |
+| `athena-gpu` | apps | `hp-gpu` | RTX 4000 x3 + RTX 5000 x2 |
 | `spot-gpu` | hpc | `hp-gpu` | same shared quota |
-| `athena-kepler` | apps | `kepler-gpu` | Titan Black x7 |
+| `athena-kepler` | apps | `kepler-gpu` | Titan Black x8 |
+| `apps-kepler` | apps | `kepler-gpu` | same shared quota (tei serving lives here) |
 | `spot-kepler` | hpc | `kepler-gpu` | same shared quota |
 | `athena-ada` | apps | `ada-gpu` | contra Ada x1, opt-in, shared with Plex |
+| `apps-amd` | apps | `amd-gpu` | traitor RX 7900 XTX x1 (tei-amd serving lives here) |
 
 How to submit:
 - **athena Experiment/BenchmarkRun**: set `spec.scheduling.queueName` on the
@@ -57,13 +59,20 @@ Mechanics worth knowing:
 - Never pin GPU-less pods (Ray heads, dashboards, viewers) to hp01-03 —
   that keeps a server powered 24/7. CPU-only podsets fall into the
   `cpu-any` flavor automatically.
-- Priorities: `mesh-high` preempts within `hp-gpu`; `imgen-low` yields.
+- Priorities: `serving` (20000) > `mesh-high` (10000) > batch (implicit 0).
+  All four GPU ClusterQueues share one cohort (`gpu`): idle quota is borrowed
+  freely across pools, `reclaimWithinCohort=LowerPriority` lets an owner take
+  its own quota back from lower-priority borrowers (serving reclaims from
+  batch), and `borrowWithinCohort.policy=LowerPriority` lets a borrower
+  displace lower priorities elsewhere. Equal priorities never preempt.
 
 ## Lane 2 — resident GPU services
 
-tei (tyan01), tei-amd (traitor), Plex (contra) — plus comfyui (seir), which
-is Lane-2-only-while-awake: sablier scales it to zero after 30m without
-traffic and wakes it on demand. To use ComfyUI from an agent, go THROUGH the
+Plex (contra) — plus comfyui (seir), which is Lane-2-only-while-awake:
+sablier scales it to zero after 30m without traffic and wakes it on demand
+(its wake pod is Kueue-gated at `mesh-high` via the pod integration). tei and
+tei-amd graduated out of this lane: they are plain Kueue workloads now (see
+the serving row in the Lane-1 table). To use ComfyUI from an agent, go THROUGH the
 wake route so your traffic renews the session:
 `curl -H 'Host: comfyui.casazza.io' http://traefik.kube-system.svc.cluster.local/system_stats`
 (first hit returns an HTML loading page; poll until JSON, ~30-60s). Calling
@@ -75,8 +84,9 @@ adding or moving a resident:
 - `strategy.type: Recreate` — a single-GPU node deadlocks RollingUpdate
   (the new pod can never schedule while the old one holds the card).
 - In the SAME commit, update the affected flavor's `nominalQuota` and the
-  reservation comment in `nixlab/modules/k8s/kueue/queues.nix`.
-  Invariant: flavor GPU quota = physical GPUs − resident reservations.
+  comment in `nixlab/modules/k8s/kueue/queues.nix`.
+  Invariant: flavor GPU quota = the node's physical usable GPUs; every GPU
+  consumer is Kueue-accounted — there are no carve-outs.
 
 ## Lane 3 — on-demand interactive (SkyPilot)
 
@@ -109,5 +119,6 @@ kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase=="Running")
 
 A job stuck suspended = queue name typo or quota exhausted
 (`kubectl describe workload <name>` shows which). A GPU "free" in nvidia-smi
-but unadmittable = a resident service reservation — check the capacity map.
+but unadmittable = someone else's admitted workload — check the Kueue
+dashboard (quota vs usage per ClusterQueue/flavor).
 
