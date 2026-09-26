@@ -53,10 +53,12 @@ Mechanics worth knowing:
   5-minute Pending pod by adding nodeSelectors.
 - Kueue injects the admitted flavor's nodeLabels (and, for `kepler`, the
   tyan01 taint tolerations) into the pods — producers don't hand-place.
-- tyan01 lane (still named `kepler-*`) is a MIXED Pascal/Maxwell node: every
-  image must be built at the **compute_52 PTX baseline** (JITs forward onto
-  the 1080s). SASS-only builds for one family crash on the other; vLLM does
-  not run here (sm < 7.0) — serving belongs on the hp pool.
+- tyan01 lane (still named `kepler-*`) is a MIXED Pascal/Maxwell node. Stock
+  CUDA-12 wheels already work on both dies (SASS is minor-forward within a
+  major: torch's sm_50 cubin runs on M60 sm_52, sm_60 on 1080 sm_61; TEI's
+  sm_35-era PTX JITs forward). For NEW custom CUDA extensions, include
+  sm_52 and sm_61 (or ship PTX). vLLM does not run here (sm < 7.0 kernel
+  floor) — serving belongs on the hp pool.
 - Never pin GPU-less pods (Ray heads, dashboards, viewers) to hp01-03 —
   that keeps a server powered 24/7. CPU-only podsets fall into the
   `cpu-any` flavor automatically.
