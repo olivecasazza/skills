@@ -16,7 +16,7 @@ idle-down.** Never point a raw pod at a GPU node outside these lanes.
 |---|---|---|
 | hp01-03 | 3x RTX 4000 (8 GB), autoscale-to-zero | Kueue `hp-gpu` (rtx4000 flavor) or SkyPilot |
 | seir | 2x RTX 5000 (16 GB) | 1 held by comfyui **only while awake** (sablier scales it to zero after 30m idle); 1 via Kueue `hp-gpu` (rtx5000 flavor) |
-| tyan01 | 8x GTX Titan Black (6 GB, Kepler, CUDA <= 11.4) | Kueue `kepler-gpu`, all 8 (tei accounted at `serving`) |
+| tyan01 | 7 dies: 3x GTX 1080 (Pascal sm_61, 8 GB) + 2x Tesla M60 (4 Maxwell sm_52 dies, 8 GB each) — driver 580, CUDA 12, **uniform sm_52 PTX image tier** | all 7 via Kueue `kepler-gpu` (tei accounted at `serving`); flavor keys on hostname, not product (mixed node) |
 | traitor | 1x RX 7900 XTX (ROCm gfx1100; plugin also enumerates an iGPU) | Kueue `amd-gpu` via `apps-amd` (tei-amd accounted at `serving`) |
 | contra | 1x RTX 4000 SFF Ada (20 GB) | shared: Plex transcode (non-exclusive NVENC, no resource request) + opt-in batch via Kueue `ada-gpu` — leave ~4 GB VRAM for transcodes |
 
@@ -53,9 +53,10 @@ Mechanics worth knowing:
   5-minute Pending pod by adding nodeSelectors.
 - Kueue injects the admitted flavor's nodeLabels (and, for `kepler`, the
   tyan01 taint tolerations) into the pods — producers don't hand-place.
-- Kepler lane needs CUDA <= 11.4 / sm_35-capable images (driver 470).
-  Modern PyTorch wheels will not initialize — use the queue only with
-  images built for it.
+- tyan01 lane (still named `kepler-*`) is a MIXED Pascal/Maxwell node: every
+  image must be built at the **compute_52 PTX baseline** (JITs forward onto
+  the 1080s). SASS-only builds for one family crash on the other; vLLM does
+  not run here (sm < 7.0) — serving belongs on the hp pool.
 - Never pin GPU-less pods (Ray heads, dashboards, viewers) to hp01-03 —
   that keeps a server powered 24/7. CPU-only podsets fall into the
   `cpu-any` flavor automatically.
