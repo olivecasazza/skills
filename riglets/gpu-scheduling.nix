@@ -25,7 +25,13 @@ _:
     };
 
     # Pure strategy doc — no tool script. SKILL.md lives on disk (not inline)
-    # because nixlab's hermes-skills.nix reads riglets/<name>/SKILL.md directly.
+    # so rigup symlinks the directory as one skill (discovery is
+    # non-recursive per skill), the same shape as the pinned-input wrappers.
+    #
+    # NOT read by nixlab any more: it used to be read via a `skillsSrc`
+    # specialArg into nixlab's modules/k8s/apps/paperclip/hermes-skills.nix,
+    # which was deleted in nixlab 6fd8c8eb. The nixlab home gets this skill
+    # through its own flake input, not through this repo.
     docs = ./gpu-scheduling;
   };
 }

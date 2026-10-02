@@ -2,7 +2,9 @@
 # Defines which rigs are available and which riglets they bundle.
 
 [rigs.default.riglets]
-# Skills defined in this repository (riglets/*.nix)
+# Skills defined in this repository (riglets/*.nix).
+# `dagster-expert` and `dignified-python` are thin wrappers whose docs come from
+# the pinned `dagster-skills` flake input rather than from this repo's tree.
 self = [
   "nixlab-health",
   "gpu-scheduling",
@@ -13,6 +15,15 @@ self = [
   "vault-classify",
   "vault-synthesize",
   "pnf-signals",
+  "dagster-expert",
+  "dignified-python",
+  # The kit's review family, built by lib/cek-review.nix. Thin wrappers whose
+  # docs come from the pinned `context-engineering-kit` flake input, like
+  # dagster-expert above.
+  "cek-review-pr",
+  "cek-review-local-changes",
+  "cek-triage-review",
+  "cek-attach-review-to-pr",
 ]
 # Base riglets pulled from the rigup flake itself
 rigup = ["agent-rig-system"]

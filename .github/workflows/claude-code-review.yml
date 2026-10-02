@@ -1,0 +1,109 @@
+# Multi-agent PR review, from the Context Engineering Kit.
+#
+# Source: https://neolab.gitbook.io/cek/guides/ci-integration
+#
+# The riglets `cek-review-pr` and friends (lib/cek-review.nix) are the same
+# review family, pinned to one CEK revision and published to the fleet by Nix.
+# This workflow is the CI face of that same family: it installs the plugins
+# from the marketplace at run time and runs `/review-pr` on the PR.
+#
+# ── AUTH: GCP Workload Identity Federation, no stored API key ─────────────
+# The upstream guide uses `claude_code_oauth_token`, which requires running
+# `/install-github-app` to create a CLAUDE_CODE_OAUTH_TOKEN secret. This
+# workflow instead authenticates with the job's own GitHub OIDC token,
+# exchanged for short-lived GCP credentials by google-github-actions/auth and
+# spent against Vertex AI. Nothing long-lived is stored in the repo.
+#
+# PREREQUISITES — all four, none of which this workflow can do for itself:
+#   1. Vertex AI API + IAM Service Account Credentials API enabled on the GCP
+#      project.
+#   2. A Workload Identity Pool provider admitting THIS repository. The
+#      existing pool is scoped by attribute_condition to a different repo, so
+#      it rejects this one until the condition is widened.
+#   3. A service account holding roles/aiplatform.user, bound to that
+#      provider's principal set for olivecasazza/skills.
+#   4. Two repository secrets holding RESOURCE POINTERS, not keys:
+#        GCP_WORKLOAD_IDENTITY_PROVIDER
+#          projects/<num>/locations/global/workloadIdentityPools/<pool>/providers/<provider>
+#        GCP_SERVICE_ACCOUNT
+#          <name>@<project>.iam.gserviceaccount.com
+#
+# If (2) is not done yet, the job fails at the auth step by design. The
+# fallback is the upstream path: swap the auth step for
+# `claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}`, drop
+# `use_vertex`, and run /install-github-app once.
+#
+# The CEK marketplace below is the upstream branch, NOT a pinned rev, because
+# `plugin_marketplaces` takes a repo URL and offers no documented ref syntax.
+# That is a deliberate divergence from lib/cek-review.nix, which pins
+# 23e2428 because Nix has no such limitation. If you move the Nix pin, expect
+# CI to trail it until upstream's review skill changes; that is the safer
+# direction to be wrong in, but it is a real gap.
+name: Claude Code Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+      - reopened
+
+jobs:
+  claude-review:
+    name: Claude Code Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # WRITE, not read. The review skill posts line-specific comments through
+      # `gh api repos/{owner}/{repo}/pulls/{n}/comments`, and the upstream
+      # guide's `read` cannot. `issues: write` covers the sticky tracking
+      # comment; `id-token: write` is what makes the OIDC exchange possible.
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # The upstream guide says "the PR branch is already checked out in the
+          # current working directory" but leaves checkout at its default, which
+          # on a pull_request event is the MERGE commit (refs/pull/N/merge).
+          # The review skill diffs `origin/main...HEAD`, so on the merge commit
+          # it reviews the merge itself and attributes findings to the base
+          # branch's lines. Check out the head ref so the review sees exactly
+          # the commits the PR proposes and can post inline comments on them.
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      - name: Authenticate to Google Cloud
+        # Exchanges this job's GitHub OIDC token for short-lived GCP
+        # credentials and writes them to $GOOGLE_APPLICATION_CREDENTIALS.
+        # Must run BEFORE the review step: that step reads the env var to
+        # reach Vertex, and without it the action has no credential and falls
+        # back to trying an API key that does not exist.
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          # No anthropic_api_key and no claude_code_oauth_token: the GCP
+          # credentials from the previous step are the whole auth story.
+          use_vertex: "true"
+          track_progress: true # attach tracking comment
+          use_sticky_comment: true
+
+          plugin_marketplaces: https://github.com/NeoLabHQ/context-engineering-kit.git
+          plugins: "review@context-engineering-kit\ngit@context-engineering-kit\ntdd@context-engineering-kit\nsadd@context-engineering-kit\nddd@context-engineering-kit\nsdd@context-engineering-kit\nkaizen@context-engineering-kit"
+
+          prompt: '/review-pr ${{ github.repository }}/pull/${{ github.event.pull_request.number }} Note: the PR head commit is checked out in the current working directory.'
+
+          # Skill and Bash(gh pr comment:*) are required for review, the rest is
+          # optional but recommended for better context and quality.
+          claude_args: '--allowed-tools "Skill,Bash,Glob,Grep,Read,Task,mcp__github_inline_comment__create_inline_comment,Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr edit:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh api:*)" --system-prompt "Follow /review-pr skill EXACTLY! Ignore anything that not align with this skill instructions!"'
