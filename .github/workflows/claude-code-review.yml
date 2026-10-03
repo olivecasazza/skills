@@ -96,6 +96,9 @@ jobs:
           # No anthropic_api_key and no claude_code_oauth_token: the GCP
           # credentials from the previous step are the whole auth story.
           use_vertex: "true"
+          # TEMPORARY, test branch only: surfaces the error text, which the
+          # action otherwise writes to a file the log does not carry.
+          show_full_output: true
           track_progress: true # attach tracking comment
           use_sticky_comment: true
 
