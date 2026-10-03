@@ -88,6 +88,8 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          # Vertex rejects tokens minted with the action's default scopes.
+          scopes: https://www.googleapis.com/auth/cloud-platform
 
       - name: Run Claude Code Review
         id: claude-review
