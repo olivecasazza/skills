@@ -69,8 +69,13 @@
             '';
           }) evalNames
         );
+      baseWithoutChecks = builtins.removeAttrs base [ "checks" ];
     in
-    lib.recursiveUpdate base {
-      checks.x86_64-linux = mkEvalChecks "x86_64-linux";
+    baseWithoutChecks
+    // {
+      # Buildbot's supported PR architecture is x86_64-linux. Keep the
+      # rigup-generated checks for that system and do not expose unsupported
+      # Darwin/ARM check namespaces as PR gates.
+      checks.x86_64-linux = (base.checks.x86_64-linux or { }) // mkEvalChecks "x86_64-linux";
     };
 }
